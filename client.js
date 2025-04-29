@@ -56,6 +56,7 @@ class Client extends Obj {
   }
   async toGetBalance$(address) {
     const client = this;
+    let { rpc } = client;
     const { value } = await rpc.getBalance(Kit.address(address)).send();
     return d(value);
   }
