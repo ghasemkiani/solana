@@ -10,7 +10,10 @@ class Client extends Obj {
       provider: null,
       // network: "mainnet-beta",
       network: "mainnet",
+      // defaultUrl: "https://api.devnet.solana.com",
       defaultUrl: "https://api.mainnet-beta.solana.com",
+      // defaultUrlSubscriptions: "wss://api.devnet.solana.com",
+      defaultUrlSubscriptions: "wss://api.mainnet-beta.solana.com",
       commitment: "confirmed", // processed|confirmed|finalized
       _url: null,
       _rpc: null,
@@ -27,14 +30,18 @@ class Client extends Obj {
         MELANIA: "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P",
         BARRON: "2Ubidk13H1yjdig8PDfiLWGUnpFwhyrwdczsjM51aoK3",
         PENGU: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
-        PDOGE: "3CvQPN2bSAVeroh9DLVT42wynjByUapvLPj3maJg6AyB",
+        ai16z: "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC",
         FARTCOIN: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
         CHILLGUY: "HvpPbDim5n5C25osc2krBbAvXFe3c7a7uU2P8d1EbmdF",
         PAXG: "C6oFsE8nXRDThzrMEQ5SxaNFGKoyyfWDDVPw37JKvPTe",
         TRX: "GbbesPbaYh5uiAZSYNXTc7w9jty1rpg3P9L4JeN4LkKc",
         JUP: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        PDOGE: "3CvQPN2bSAVeroh9DLVT42wynjByUapvLPj3maJg6AyB",
       },
     });
+  }
+  tokenAddress(tokenId) {
+    return this.contracts[tokenId];
   }
   get url() {
     if (cutil.na(this._url)) {
@@ -56,7 +63,14 @@ class Client extends Obj {
   }
   async toGetBalance$(address) {
     const client = this;
-    let { rpc } = client;
+    const { rpc } = client;
+    for (let k in rpc) {
+      console.log(k);
+    }
+    console.log(rpc);
+    console.log("getBalance" in Object.getPrototypeOf(rpc));
+    console.log(rpc.getBalance);
+    console.log(rpc.getTokenAccountBalance);
     const { value } = await rpc.getBalance(Kit.address(address)).send();
     return d(value);
   }
@@ -67,9 +81,21 @@ class Client extends Obj {
   }
   async toGetBalance(address) {
     const client = this;
-    let { decimals } = client;
+    const { decimals } = client;
     const balance$ = await client.toGetBalance$(address);
     return balance$.mul(10 ** -decimals).toNumber();
+  }
+  async toGetTokenAddressBalance$(address, tokenAddress) {
+    const client = this;
+    /*
+    const [tokenAccount] = await findAssociatedTokenPda({
+      mint: tokenAddress,
+      owner: Kit.address(address),
+      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    });
+    const { value: { amount, decimals } } = await rpc.getTokenAccountBalance(usdcTokenAccount).send();
+    */
+    // ...
   }
   async toGenerateKeyPairSigner() {
     return await Key.generateKeyPairSigner();
@@ -80,7 +106,7 @@ const iwclient = {
   provider: null,
   get client() {
     if (cutil.na(this._client)) {
-      let { provider } = this;
+      const { provider } = this;
       this._client = new Client({ provider });
     }
     return this._client;
@@ -91,6 +117,8 @@ const iwclient = {
 };
 
 export { Client, iwclient };
+
+// https://solana-kit-docs.vercel.app/docs/getting-started
 
 // https://solana.com/developers/cookbook/wallets/create-keypair
 // https://github.com/anza-xyz/solana-web3.js
