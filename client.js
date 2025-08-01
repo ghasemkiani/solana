@@ -64,13 +64,6 @@ class Client extends Obj {
   async toGetBalance$(address) {
     const client = this;
     const { rpc } = client;
-    for (let k in rpc) {
-      console.log(k);
-    }
-    console.log(rpc);
-    console.log("getBalance" in Object.getPrototypeOf(rpc));
-    console.log(rpc.getBalance);
-    console.log(rpc.getTokenAccountBalance);
     const { value } = await rpc.getBalance(Kit.address(address)).send();
     return d(value);
   }
