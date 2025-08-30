@@ -1,6 +1,6 @@
 {
   "name": "@ghasemkiani/solana",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "index.js",
   "scripts": {
     "test": "node --test"
@@ -13,10 +13,10 @@
   "dependencies": {
     "@ghasemkiani/base": "github:ghasemkiani/base",
     "@ghasemkiani/decimal": "github:ghasemkiani/decimal",
-    "@solana-program/compute-budget": "^0.7.0",
-    "@solana-program/memo": "^0.7.0",
     "@solana-program/system": "^0.7.0",
     "@solana-program/token": "^0.5.1",
-    "@solana/kit": "^2.1.0"
+    "@solana/kit": "^2.3.0",
+    "bip39": "^3.1.0",
+    "micro-ed25519-hdkey": "^0.1.2"
   }
 }

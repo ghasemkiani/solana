@@ -10,12 +10,13 @@ class Client extends Obj {
       provider: null,
       // network: "mainnet-beta",
       network: "mainnet",
-      // defaultUrl: "https://api.devnet.solana.com",
       defaultUrl: "https://api.mainnet-beta.solana.com",
-      // defaultUrlSubscriptions: "wss://api.devnet.solana.com",
       defaultUrlSubscriptions: "wss://api.mainnet-beta.solana.com",
+      defaultUrlTestnet: "https://api.devnet.solana.com",
+      defaultUrlSubscriptionsTestnet: "wss://api.devnet.solana.com",
       commitment: "confirmed", // processed|confirmed|finalized
       _url: null,
+      _urlSubscriptions: null,
       _rpc: null,
       decimals: 9,
       contracts: {
@@ -24,7 +25,9 @@ class Client extends Obj {
         W: "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ",
         USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
         USDT: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-        BTC: "DgXyWTdZtEsambXDUaoK8prHTLa2afkdN4V1V8YvMPj5",
+        cbBTC: "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+        WBTC: "5XZw2LKTyrfvfiskJ78AMpackRjPcyCif1WhUsPDuVqQ",
+        BTC_Sollet: "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E",
         RAY: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
         TRUMP: "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
         MELANIA: "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P",
@@ -45,13 +48,22 @@ class Client extends Obj {
   }
   get url() {
     if (cutil.na(this._url)) {
-      this._url = this.defaultUrl;
+      this._url = /main/i.test(this.network) ? this.defaultUrl : this.defaultUrlTestnet;
     }
     return this._url;
   }
   set url(url) {
     this._url = url;
   }
+  get urlSubscriptions() {
+		if (cutil.na(this._urlSubscriptions)) {
+			this._urlSubscriptions = /main/i.test(this.network) ? this.defaultUrlSubscriptions : this.defaultUrlSubscriptionsTestnet;
+		}
+		return this._urlSubscriptions;
+	}
+	set urlSubscriptions(urlSubscriptions) {
+		this._urlSubscriptions = urlSubscriptions;
+	}
   get rpc() {
     if (cutil.na(this._rpc)) {
       this._rpc = Kit.createSolanaRpc(this.url);
@@ -61,6 +73,15 @@ class Client extends Obj {
   set rpc(rpc) {
     this._rpc = rpc;
   }
+  get rpcSubscriptions() {
+		if (cutil.na(this._rpcSubscriptions)) {
+			this._rpcSubscriptions = Kit.createSolanaRpcSubscriptions(this.urlSubscriptions);
+		}
+		return this._rpcSubscriptions;
+	}
+	set rpcSubscriptions(rpcSubscriptions) {
+		this._rpcSubscriptions = rpcSubscriptions;
+	}
   async toGetBalance$(address) {
     const client = this;
     const { rpc } = client;
