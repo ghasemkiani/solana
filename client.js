@@ -1,4 +1,8 @@
+import { HDKey } from "micro-ed25519-hdkey";
+import * as bip39 from "bip39";
 import * as Kit from "@solana/kit";
+import { findAssociatedTokenPda } from "@solana-program/token";
+import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 
 import { cutil } from "@ghasemkiani/base";
 import { Obj } from "@ghasemkiani/base";
@@ -101,18 +105,58 @@ class Client extends Obj {
   }
   async toGetTokenAddressBalance$(address, tokenAddress) {
     const client = this;
-    /*
+    const { rpc } = client;
     const [tokenAccount] = await findAssociatedTokenPda({
       mint: tokenAddress,
       owner: Kit.address(address),
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     });
-    const { value: { amount, decimals } } = await rpc.getTokenAccountBalance(usdcTokenAccount).send();
-    */
-    // ...
+    const { value: { amount, decimals } } = await rpc.getTokenAccountBalance(tokenAccount).send();
+    return d(amount);
+  }
+  async toGetTokenAddressBalance_(address, tokenAddress) {
+    const client = this;
+    const balance$ = await client.toGetTokenAddressBalance$(address, tokenAddress);
+    return balance$.toFixed(0);
+  }
+  async toGetTokenAddressBalance(address, tokenAddress) {
+    const client = this;
+    const { rpc } = client;
+    const [tokenAccount] = await findAssociatedTokenPda({
+      mint: tokenAddress,
+      owner: Kit.address(address),
+      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    });
+    const { value: { amount, decimals } } = await rpc.getTokenAccountBalance(tokenAccount).send();
+    return d(amount).mul(10 ** -decimals).toNumber();
+  }
+  async toGetTokenBalance$(address, tokenId) {
+    const client = this;
+    const tokenAddress = client.tokenAddress(tokenId);
+    return await client.toGetTokenAddressBalance$(address, tokenAddress);
+  }
+  async toGetTokenBalance_(address, tokenId) {
+    const client = this;
+    const tokenAddress = client.tokenAddress(tokenId);
+    return await client.toGetTokenAddressBalance_(address, tokenAddress);
+  }
+  async toGetTokenBalance(address, tokenId) {
+    const client = this;
+    const tokenAddress = client.tokenAddress(tokenId);
+    return await client.toGetTokenAddressBalance(address, tokenAddress);
   }
   async toGenerateKeyPairSigner() {
     return await Key.generateKeyPairSigner();
+  }
+  async toCreateKeyPairSignerFromMnemonic({ mnemonic, index = 0, path = `m/44'/501'/0'` }) {
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const hd = HDKey.fromMasterSeed(seed.toString("hex"));
+
+    // path = `m/44'/501'/${index}'/0'`;
+    const child = hd.derive(path);
+
+    const signer = await Kit.createKeyPairSignerFromPrivateKeyBytes(new Uint8Array(child.privateKey));
+    return signer;
   }
 }
 
